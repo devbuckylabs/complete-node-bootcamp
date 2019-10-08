@@ -5,4 +5,4 @@ const input = fs.readFileSync('./txt/input.txt','UTF-8');
 console.log(input);
 desc = `${desc} \n${input}`;
 fs.writeFileSync('./txt/output.txt', desc);
-console.log('File written');
+console.log('File written') ;
