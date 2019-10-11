@@ -1,8 +1,8 @@
-//****************************/
-//FILES SYNC//
 const fs = require('fs'); 
 const http = require('http');
 const url = require('url');
+//****************************/
+//FILES SYNC/
 // let desc = "Avacado is shit";
 // console.log(desc);
 // const input = fs.readFileSync('./txt/input.txt', 'UTF-8');
