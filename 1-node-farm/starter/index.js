@@ -29,16 +29,20 @@ const url = require('url');
 // })
 ///****************************/
 //**********SERVER*******//
-
+console.log({__dirname});
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`,'UTF-8');
+const dataObj = JSON.parse(data);  
+   
 const server = http.createServer((req,res)=>{
     console.log(req.url);
     if(req.url === '/' || req.url === '/overview'){
         res.end('Hello from Server!!!!!');
-
     }
    else if(req.url === '/product'){
         res.end('Products not added yet');
-
+    }
+    else if(req.url === '/api'){        
+        res.end(data);
     }
     else{
         res.writeHead(404,{
@@ -46,9 +50,7 @@ const server = http.createServer((req,res)=>{
             'my-own-header': 'Holaa'
         });
         res.end('<h1>404 NOT FOUND</h1>');
-
     }
-
 });
 
 server.listen(8000,'127.0.0.1',()=>{
