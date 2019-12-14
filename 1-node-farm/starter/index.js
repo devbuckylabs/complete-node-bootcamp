@@ -1,6 +1,9 @@
-const fs = require('fs'); 
-const http = require('http');
-const url = require('url');
+const fs = require("fs");
+const http = require("http");
+const url = require("url");
+
+const replacePlaceHolder = require("./modules/replaceTemplate");
+
 //****************************/
 //FILES SYNC/
 // let desc = "Avacado is shit";
@@ -30,66 +33,48 @@ const url = require('url');
 ///****************************/
 //**********SERVER*******//
 
-const replacePlaceHolder = (temp,product) => {
+const tempOverview = fs.readFileSync(
+  `${__dirname}/templates/template-overview.html`,
+  "UTF-8"
+);
+const tempCard = fs.readFileSync(
+  `${__dirname}/templates/template-card.html`,
+  "UTF-8"
+);
+const tempProduct = fs.readFileSync(
+  `${__dirname}/templates/template-product.html`,
+  "UTF-8"
+);
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "UTF-8");
+const dataObj = JSON.parse(data);
 
-let output = temp.replace(/{%PRODUCTNAME%}/g, product.productName);
-  output = output.replace(/{%IMAGE%}/g, product.image);
-  output = output.replace(/{%PRICE%}/g, product.price);
-  output = output.replace(/{%FROM%}/g, product.from);
-  output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
-  output = output.replace(/{%QUANTITY%}/g, product.quantity);
-  output = output.replace(/{%DESCRIPTION%}/g, product.description);
-  output = output.replace(/{%ID%}/g, product.id);
+const server = http.createServer((req, res) => {
+  const { query, pathname } = url.parse(req.url, true);
 
-if(!product.organic) output = output.replace(/{%NOT_ORGANIC%}/g, 'not-organic');
+  if (pathname === "/" || pathname === "/overview") {
+    const cardshtml = dataObj
+      .map(el => replacePlaceHolder(tempCard, el))
+      .join("");
 
-return output;
-};
-
-
-const tempOverview = fs.readFileSync(`${__dirname}/templates/template-overview.html`,'UTF-8');
-const tempCard = fs.readFileSync(`${__dirname}/templates/template-card.html`,'UTF-8');
-const tempProduct= fs.readFileSync(`${__dirname}/templates/template-product.html`,'UTF-8');
-const data = fs.readFileSync(`${__dirname}/dev-data/data.json`,'UTF-8');
-const dataObj = JSON.parse(data);  
-   
-const server = http.createServer((req,res)=>{
-    console.log(req.url);
-    if(req.url === '/' || req.url === '/overview'){
-
-        const cardshtml= dataObj.map(el => replacePlaceHolder(tempCard,el)).join('');
-        
-        const output = tempOverview.replace('{%PRODUCT_CARDS%}',cardshtml);
-        res.writeHead(200,{'Content-type': 'text/html'});
-        res.end(output);
-    }
-   else if(req.url === '/product'){
-        res.end('Products not added yet');
-    }
-    else if(req.url === '/api'){        
-        res.end(data);
-    }
-    else{
-        res.writeHead(404,{
-            'Content-type': 'text/html' ,
-            'my-own-header': 'Holaa'
-        });
-        res.end('<h1>404 NOT FOUND</h1>');
-    }
+    const output = tempOverview.replace("{%PRODUCT_CARDS%}", cardshtml);
+    res.writeHead(200, { "Content-type": "text/html" });
+    res.end(output);
+  } else if (pathname === "/product") {
+    res.writeHead(200, { "Content-type": "text/html" });
+    const product = dataObj[query.id];
+    const output = replacePlaceHolder(tempProduct, product);
+    res.end(output);
+  } else if (pathname === "/api") {
+    res.end(data);
+  } else {
+    res.writeHead(404, {
+      "Content-type": "text/html",
+      "my-own-header": "Holaa"
+    });
+    res.end("<h1>404 NOT FOUND</h1>");
+  }
 });
 
-server.listen(8000,'127.0.0.1',()=>{
-
-    console.log('Listening to requests on port 8000');
-})
-
-
-
-
-
-
-
-
-
-
-
+server.listen(8000, "127.0.0.1", () => {
+  console.log("Listening to requests on port 8000");
+});
